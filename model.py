@@ -11,3 +11,4 @@ class CustomNewNet(nn.Module):
     
     def forward(self, x):
         return self.resnet34(x)
+
