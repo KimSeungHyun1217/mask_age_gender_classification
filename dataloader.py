@@ -23,7 +23,7 @@ class MasedFaceDataset(Dataset):
     def __len__(self):
         return len(self.df)
 
-def custom_dataloader(kind, transform, batch_size=1, shuffle=False, sampler=None, num_workers=0):
-    dataset = MasedFaceDataset(kind, transform)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, sampler=sampler, num_workers=num_workers)
-    return dataloader
+def custom_data_loader(kind, transform, batch_size=1, shuffle=False, sampler=None, num_workers=0):
+    data_set = MasedFaceDataset(kind, transform)
+    data_loader = DataLoader(data_set, batch_size=batch_size, shuffle=shuffle, sampler=sampler, num_workers=num_workers)
+    return data_loader
