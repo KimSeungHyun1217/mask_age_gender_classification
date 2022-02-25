@@ -20,13 +20,12 @@ IMG_EXTENSIONS = [
 def is_image_file(filename):
     return any(filename.endswith(extension) for extension in IMG_EXTENSIONS)
 
-
 class BaseAugmentation:
-    def __init__(self, resize, mean, std, **args):
+    def __init__(self, mean, std, **args):
         self.transform = transforms.Compose([
-            Resize(resize, Image.BILINEAR),
+            # Resize(resize, Image.BILINEAR),
             ToTensor(),
-            Normalize(mean=mean, std=std),
+            # Normalize(mean=mean, std=std),
         ])
 
     def __call__(self, image):
@@ -312,3 +311,46 @@ class TestDataset(Dataset):
 
     def __len__(self):
         return len(self.img_paths)
+
+# -- 추가(박동훈)
+class KindNClasses(int, Enum):
+    MASK = 3
+    AGE = 3
+    GENDER = 2
+
+    @classmethod
+    def from_str(cls, value: str) -> int:
+        value = value.lower()
+        if value == "mask":
+            return cls.MASK
+        elif value == "age":
+            return cls.AGE
+        elif value == "gender":
+            return cls.GENDER
+        else:
+            raise ValueError(f"Kind value should be in ['mask', 'age', 'gender']")
+
+# -- 추가(박동훈)
+class MaskBaseByKindDataset(MaskBaseDataset):
+    def __init__(self, data_dir, kind, mean=(0.548, 0.504, 0.479), std=(0.237, 0.247, 0.246), val_ratio=0.2):
+        super().__init__(data_dir, mean, std, val_ratio)
+        self.kind = kind
+        self.num_classes = KindNClasses.from_str(kind).value
+        
+        if(kind == 'mask'):
+            self.labels = self.mask_labels
+        elif(kind == 'gender'):
+            self.labels = self.gender_labels
+        elif(kind == 'age'):
+            self.labels = self.age_labels
+
+    def __getitem__(self, index):
+        assert self.transform is not None, ".set_tranform 메소드를 이용하여 transform 을 주입해주세요"
+        image = self.read_image(index)
+        label = self.get_label(index)
+        image_transform = self.transform(image)
+
+        return image_transform, label
+    
+    def get_label(self, index):
+        return self.labels[index]

@@ -18,7 +18,7 @@ from torch.utils.tensorboard import SummaryWriter
 from dataset import MaskBaseDataset
 from loss import create_criterion
 
-
+# 시드 설정
 def seed_everything(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
@@ -28,12 +28,12 @@ def seed_everything(seed):
     np.random.seed(seed)
     random.seed(seed)
 
-
+# learning rate 가져오기
 def get_lr(optimizer):
     for param_group in optimizer.param_groups:
         return param_group['lr']
 
-
+# figure 객체 반환, 언제쓰일지 모름
 def grid_image(np_images, gts, preds, n=16, shuffle=False):
     batch_size = np_images.shape[0]
     assert n <= batch_size
@@ -64,7 +64,7 @@ def grid_image(np_images, gts, preds, n=16, shuffle=False):
 
     return figure
 
-
+# 저장 폴더 설정
 def increment_path(path, exist_ok=False):
     """ Automatically increment path, i.e. runs/exp --> runs/exp0, runs/exp1 etc.
 
@@ -82,7 +82,7 @@ def increment_path(path, exist_ok=False):
         n = max(i) + 1 if i else 2
         return f"{path}{n}"
 
-
+# train
 def train(data_dir, model_dir, args):
     seed_everything(args.seed)
 
@@ -90,19 +90,25 @@ def train(data_dir, model_dir, args):
 
     # -- settings
     use_cuda = torch.cuda.is_available()
-    device = torch.device("cuda" if use_cuda else "cpu")
+    device = torch.device("cuda:0" if use_cuda else "cpu")
 
     # -- dataset
     dataset_module = getattr(import_module("dataset"), args.dataset)  # default: BaseAugmentation
-    dataset = dataset_module(
-        data_dir=data_dir,
-    )
+    kind = args.kind
+    if(kind == 'NULL'):
+        dataset = dataset_module(
+            data_dir=data_dir,
+        )
+    else:
+        dataset = dataset_module(
+            data_dir=data_dir,
+            kind=kind
+        )
     num_classes = dataset.num_classes  # 18
 
     # -- augmentation
     transform_module = getattr(import_module("dataset"), args.augmentation)  # default: BaseAugmentation
     transform = transform_module(
-        resize=args.resize,
         mean=dataset.mean,
         std=dataset.std,
     )
@@ -110,7 +116,7 @@ def train(data_dir, model_dir, args):
 
     # -- data_loader
     train_set, val_set = dataset.split_dataset()
-
+    
     train_loader = DataLoader(
         train_set,
         batch_size=args.batch_size,
@@ -144,7 +150,7 @@ def train(data_dir, model_dir, args):
         lr=args.lr,
         weight_decay=5e-4
     )
-    scheduler = StepLR(optimizer, args.lr_decay_step, gamma=0.5)
+    scheduler = StepLR(optimizer, args.lr_decay_step, gamma=0.1)
 
     # -- logging
     logger = SummaryWriter(log_dir=save_dir)
@@ -222,9 +228,9 @@ def train(data_dir, model_dir, args):
             best_val_loss = min(best_val_loss, val_loss)
             if val_acc > best_val_acc:
                 print(f"New best model for val accuracy : {val_acc:4.2%}! saving the best model..")
-                torch.save(model.module.state_dict(), f"{save_dir}/best.pth")
+                torch.save(model.module.state_dict(), f"{save_dir}/best.pt")
                 best_val_acc = val_acc
-            torch.save(model.module.state_dict(), f"{save_dir}/last.pth")
+            torch.save(model.module.state_dict(), f"{save_dir}/last.pt")
             print(
                 f"[Val] acc : {val_acc:4.2%}, loss: {val_loss:4.2} || "
                 f"best acc : {best_val_acc:4.2%}, best loss: {best_val_loss:4.2}"
@@ -236,6 +242,7 @@ def train(data_dir, model_dir, args):
 
 
 if __name__ == '__main__':
+    torch.cuda.empty_cache()
     parser = argparse.ArgumentParser()
 
     from dotenv import load_dotenv
@@ -247,9 +254,8 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=1, help='number of epochs to train (default: 1)')
     parser.add_argument('--dataset', type=str, default='MaskBaseDataset', help='dataset augmentation type (default: MaskBaseDataset)')
     parser.add_argument('--augmentation', type=str, default='BaseAugmentation', help='data augmentation type (default: BaseAugmentation)')
-    parser.add_argument("--resize", nargs="+", type=list, default=[128, 96], help='resize size for image when training')
     parser.add_argument('--batch_size', type=int, default=64, help='input batch size for training (default: 64)')
-    parser.add_argument('--valid_batch_size', type=int, default=1000, help='input batch size for validing (default: 1000)')
+    parser.add_argument('--valid_batch_size', type=int, default=64, help='input batch size for validing (default: 1000)')
     parser.add_argument('--model', type=str, default='BaseModel', help='model type (default: BaseModel)')
     parser.add_argument('--optimizer', type=str, default='SGD', help='optimizer type (default: SGD)')
     parser.add_argument('--lr', type=float, default=1e-3, help='learning rate (default: 1e-3)')
@@ -258,6 +264,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr_decay_step', type=int, default=20, help='learning rate scheduler deacy step (default: 20)')
     parser.add_argument('--log_interval', type=int, default=20, help='how many batches to wait before logging training status')
     parser.add_argument('--name', default='exp', help='model save at {SM_MODEL_DIR}/{name}')
+    parser.add_argument('--kind', type=str, default='NULL', help='kind in ["mask", "gender", "age"]')
 
     # Container environment
     parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_TRAIN', '/opt/ml/input/data/train/images'))
