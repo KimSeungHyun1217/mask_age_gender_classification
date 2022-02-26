@@ -33,10 +33,8 @@ class BaseModel(nn.Module):
         x = x.view(-1, 128)
         return self.fc(x)
 
-
-# Custom Model Template
-class MyModel(nn.Module):
-    def __init__(self, num_classes):
+class Resnet34(nn.Module):
+    def __init__(self, num_classes, freeze=True):
         super().__init__()
         self.resnet34 = models.resnet34(pretrained=True)
         num_ftrs = self.resnet34.fc.in_features
@@ -44,3 +42,51 @@ class MyModel(nn.Module):
 
     def forward(self, x):
         return self.resnet34(x)
+
+class EfficientB0(nn.Module):
+    model_name = 'efficientnet-b0'
+    def __init__(self, num_classes, freeze=True):
+        super().__init__()
+
+        from efficientnet_pytorch import EfficientNet
+        self.model = EfficientNet.from_pretrained(self.model_name, num_classes=num_classes)
+        if(freeze):
+            for n, p in self.model.named_parameters():
+                if '_fc' not in n:
+                    p.requires_grad = False
+
+    def forward(self, x):
+        return self.model(x)
+
+class EfficientB2(EfficientB0):
+    model_name = 'efficientnet-b2'
+    def __init__(self, num_classes, freeze=True):
+        super().__init__(num_classes, freeze=True)
+
+class EfficientB4(EfficientB0):
+    model_name = 'efficientnet-b4'
+    def __init__(self, num_classes, freeze=True):
+        super().__init__(num_classes, freeze=True)
+
+    # def __init__(self,num_classes):
+    #     super(efficientnetModel,self).__init__()
+
+    #     self.num_classes = num_classes
+    #     self.model = torchvision.models.efficientnet_b0(pretrained = True)
+        
+    #     num_ftrs = self.model.classifier[1].in_features
+
+    #     self.model.fc = nn.Sequential(
+    #         nn.Dropout(0.5),
+    #         nn.Linear(num_ftrs, 1024),
+    #         nn.Dropout(0.2),
+    #         nn.Linear(1024, 512),
+    #         nn.Dropout(0.1),
+    #         nn.Linear(512, self.num_classes)) 
+    # self.model.classifier[1] = nn.Sequential(
+    #         nn.Dropout(0.5),
+    #         nn.Linear(num_ftrs, 1024),
+    #         nn.Dropout(0.2),
+    #         nn.Linear(1024, 512),
+    #         nn.Dropout(0.1),
+    #         nn.Linear(512, self.num_classes))
