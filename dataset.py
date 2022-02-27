@@ -23,8 +23,6 @@ def is_image_file(filename):
 class BaseAugmentation:
     def __init__(self, mean, std, **args):
         self.transform = transforms.Compose([
-            Resize((260, 260), Image.BILINEAR),
-            # AutoAugment(),
             ToTensor(),
             Normalize(mean=mean, std=std),
         ])
@@ -53,8 +51,6 @@ class AddGaussianNoise(object):
 class CustomAugmentation:
     def __init__(self, resize, mean, std, **args):
         self.transform = transforms.Compose([
-            Crop(30,30,354,472),
-            Resize(resize, Image.BILINEAR),
             ColorJitter(0.1, 0.1, 0.1, 0.1),
             ToTensor(),
             Normalize(mean=mean, std=std),
@@ -169,6 +165,7 @@ class MaskBaseDataset(Dataset):
 
             self.mean = np.mean(sums, axis=0) / 255
             self.std = (np.mean(squared, axis=0) - self.mean ** 2) ** 0.5 / 255
+            print(self.mean, self.std)    
 
     def set_transform(self, transform):
         self.transform = transform

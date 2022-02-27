@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision import models
+from torchvision import 
+from functools import reduce
 
 class BaseModel(nn.Module):
     def __init__(self, num_classes):
@@ -54,6 +55,21 @@ class EfficientB0(nn.Module):
             for n, p in self.model.named_parameters():
                 if '_fc' not in n:
                     p.requires_grad = False
+
+        for name, mod in reversed(list(self.model.named_modules())):
+            if isinstance(mod, nn.Linear):
+                mod_path = name.split('.')
+                classifier_parent = reduce(nn.Module.get_submodule, mod_path[:-1], model)
+                setattr(classifier_parent, mod_path[-1], nn.Sequential(
+                    nn.Linear(mod.in_features, 4096),
+                    nn.ReLU(inplace=True),
+                    nn.Dropout(0.7),
+                    nn.Linear(4096, 4096),
+                    nn.ReLU(inplace=True),
+                    nn.Dropout(0.5),
+                    nn.Linear(4096, num_classes)
+                ))
+                break
 
     def forward(self, x):
         return self.model(x)
