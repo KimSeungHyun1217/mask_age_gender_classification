@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision import 
+from torchvision import models
 from functools import reduce
 
 class BaseModel(nn.Module):
@@ -50,13 +50,13 @@ class EfficientB0(nn.Module):
         super().__init__()
 
         from efficientnet_pytorch import EfficientNet
-        self.model = EfficientNet.from_pretrained(self.model_name, num_classes=num_classes)
+        model = EfficientNet.from_pretrained(self.model_name, num_classes=num_classes)
         if(freeze):
-            for n, p in self.model.named_parameters():
+            for n, p in model.named_parameters():
                 if '_fc' not in n:
                     p.requires_grad = False
 
-        for name, mod in reversed(list(self.model.named_modules())):
+        for name, mod in reversed(list(model.named_modules())):
             if isinstance(mod, nn.Linear):
                 mod_path = name.split('.')
                 classifier_parent = reduce(nn.Module.get_submodule, mod_path[:-1], model)
@@ -70,6 +70,8 @@ class EfficientB0(nn.Module):
                     nn.Linear(4096, num_classes)
                 ))
                 break
+
+        self.model = model
 
     def forward(self, x):
         return self.model(x)

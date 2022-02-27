@@ -104,8 +104,8 @@ def train(data_dir, model_dir, args):
         dataset = dataset_module(
             data_dir=data_dir,
             kind=kind,
-            mean=(0.51778847 0.46394867 0.43383828),
-            std=(0.57528236 0.5276919  0.50627266)
+            mean=(0.41310054, 0.35737731, 0.32945708),
+            std=(0.49996853, 0.44333395, 0.42083239)
         )
     num_classes = dataset.num_classes  # 18
 
@@ -243,7 +243,7 @@ def train(data_dir, model_dir, args):
             logger.add_scalar("Val/loss", val_loss, epoch)
             logger.add_scalar("Val/accuracy", val_acc, epoch)
             logger.add_figure("results", figure, epoch)
-            print()
+            # print()/
 
 
 if __name__ == '__main__':
@@ -259,8 +259,8 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=20, help='number of epochs to train (default: 5)')
     parser.add_argument('--dataset', type=str, default='MaskBaseDataset', help='dataset augmentation type (default: MaskBaseDataset)')
     parser.add_argument('--augmentation', type=str, default='BaseAugmentation', help='data augmentation type (default: BaseAugmentation)')
-    parser.add_argument('--batch_size', type=int, default=32, help='input batch size for training (default: 32)')
-    parser.add_argument('--valid_batch_size', type=int, default=32, help='input batch size for validing (default: 32)')
+    parser.add_argument('--batch_size', type=int, default=16, help='input batch size for training (default: 32)')
+    parser.add_argument('--valid_batch_size', type=int, default=16, help='input batch size for validing (default: 32)')
     parser.add_argument('--model', type=str, default='BaseModel', help='model type (default: BaseModel)')
     parser.add_argument('--freeze', type=bool, default=True, help='use freeze')
     parser.add_argument('--optimizer', type=str, default='Adam', help='optimizer type (default: Adam)')
@@ -268,7 +268,7 @@ if __name__ == '__main__':
     parser.add_argument('--val_ratio', type=float, default=0.2, help='ratio for validaton (default: 0.2)')
     parser.add_argument('--criterion', type=str, default='focal', help='criterion type (default: focal)')
     parser.add_argument('--lr_decay_step', type=int, default=7, help='learning rate scheduler deacy step (default: 7)')
-    parser.add_argument('--log_interval', type=int, default=250, help='how many batches to wait before logging training status')
+    parser.add_argument('--log_interval', type=int, default=945, help='how many batches to wait before logging training status')
     parser.add_argument('--name', default='exp', help='model save at {SM_MODEL_DIR}/{name}')
     parser.add_argument('--kind', type=str, default='NULL', help='kind in ["mask", "gender", "age"]')
 
