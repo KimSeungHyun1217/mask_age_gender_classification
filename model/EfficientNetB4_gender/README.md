@@ -1,1 +1,0 @@
-[Val] acc : 98.33%, loss: 0.012 || best acc : 98.70%, best loss: 0.012

@@ -95,7 +95,6 @@ def train(data_dir, model_dir, args):
     # -- dataset
     dataset_module = getattr(import_module("dataset"), args.dataset)  # default: BaseAugmentation
     kind = args.kind
-
     if(kind == 'NULL'):
         dataset = dataset_module(
             data_dir=data_dir,

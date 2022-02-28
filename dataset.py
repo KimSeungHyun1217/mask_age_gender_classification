@@ -51,7 +51,6 @@ class AddGaussianNoise(object):
 class CustomAugmentation:
     def __init__(self, resize, mean, std, **args):
         self.transform = transforms.Compose([
-            ColorJitter(0.1, 0.1, 0.1, 0.1),
             ToTensor(),
             Normalize(mean=mean, std=std),
             AddGaussianNoise()
@@ -117,6 +116,7 @@ class MaskBaseDataset(Dataset):
     mask_labels = []
     gender_labels = []
     age_labels = []
+    ageMod10_labels = []
 
     def __init__(self, data_dir, mean=(0.548, 0.504, 0.479), std=(0.237, 0.247, 0.246), val_ratio=0.2):
         self.data_dir = data_dir
@@ -151,6 +151,7 @@ class MaskBaseDataset(Dataset):
                 self.mask_labels.append(mask_label)
                 self.gender_labels.append(gender_label)
                 self.age_labels.append(age_label)
+                self.ageMod10_labels.append(int(age) // 10)
 
     def calc_statistics(self):
         has_statistics = self.mean is not None and self.std is not None
@@ -193,6 +194,9 @@ class MaskBaseDataset(Dataset):
 
     def get_age_label(self, index) -> AgeLabels:
         return self.age_labels[index]
+        
+    def get_ageMod10_label(self, index) -> AgeLabels:
+        return self.ageMod10_labels[index]
 
     def read_image(self, index):
         image_path = self.image_paths[index]
@@ -312,6 +316,7 @@ class KindNClasses(int, Enum):
     MASK = 3
     AGE = 3
     GENDER = 2
+    AGEMOD10 = 7
 
     @classmethod
     def from_str(cls, value: str) -> int:
@@ -322,7 +327,10 @@ class KindNClasses(int, Enum):
             return cls.AGE
         elif value == "gender":
             return cls.GENDER
+        elif value == 'agemod10':
+            return cls.AGEMOD10
         else:
+            print(value)
             raise ValueError(f"Kind value should be in ['mask', 'age', 'gender']")
 
 # -- 추가(박동훈)
@@ -338,6 +346,8 @@ class MaskBaseByKindDataset(MaskBaseDataset):
             self.labels = self.gender_labels
         elif(kind == 'age'):
             self.labels = self.age_labels
+        elif(kind == 'ageMod10'):
+            self.labels = self.ageMod10_labels
 
     def __getitem__(self, index):
         assert self.transform is not None, ".set_tranform 메소드를 이용하여 transform 을 주입해주세요"

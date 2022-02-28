@@ -1,0 +1,20 @@
+{
+    "seed": 42,
+    "epochs": 15,
+    "dataset": "MaskBaseByKindDataset",
+    "augmentation": "BaseAugmentation",
+    "batch_size": 16,
+    "valid_batch_size": 16,
+    "model": "EfficientB2",
+    "freeze": true,
+    "optimizer": "Adam",
+    "lr": 0.001,
+    "val_ratio": 0.01,
+    "criterion": "focal",
+    "lr_decay_step": 7,
+    "log_interval": 945,
+    "name": "B2_FaceCrop_GENDER_FULLTRAIN",
+    "kind": "gender",
+    "data_dir": "/opt/ml/input/data/train/images_faceCrop",
+    "model_dir": "./model"
+}

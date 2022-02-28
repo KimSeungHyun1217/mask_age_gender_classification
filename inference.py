@@ -20,7 +20,7 @@ def load_model(saved_model, num_classes, device):
     # tar = tarfile.open(tarpath, 'r:gz')
     # tar.extractall(path=saved_model)
 
-    model_path = os.path.join(saved_model, 'best.pt')
+    model_path = os.path.join(saved_model, 'last.pt')
     model.load_state_dict(torch.load(model_path, map_location=device))
 
     return model
@@ -42,8 +42,10 @@ def inference(data_dir, model_dir, output_dir, args):
         num_classes = 3
     elif(kind =='gender'):
         num_classes = 2
+    elif(kind == 'ageMod10'):
+        num_classes = 7
     else:
-        num_classes = 18
+        num_classes = 3
 
     model = load_model(model_dir, num_classes, device).to(device)
     model.eval()
