@@ -1,3 +1,3 @@
 # python inference.py --model EfficientB2 --kind mask --data_folder images_seg_crop --model_dir ./model/B2_SEG_Crop_MASK_FULLTRAIN --file_name B2_SC_MASK
 # python inference.py --model EfficientB2 --kind gender --data_folder images_seg_crop --model_dir ./model/B2_SEG_Crop_GENDER_FULLTRAIN --file_name B2_SC_GENDER
-python inference.py --model Resnet18 --data_folder images_face_crop --model_dir ./model/RESNET18_FACE_Crop_FULLTRAIN_ALL --file_name R18_FA_ALL
+python inference.py --model Resnet18 --data_folder images_seg_crop --model_dir ./model/RESNET18_SEG_Crop_FULLTRAIN_ALL --file_name R18_SC_ALL.csv
