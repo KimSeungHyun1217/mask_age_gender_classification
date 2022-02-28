@@ -34,15 +34,41 @@ class BaseModel(nn.Module):
         x = x.view(-1, 128)
         return self.fc(x)
 
+
+class Resnet18(nn.Module):
+    def __init__(self, num_classes, freeze=True):
+        super().__init__()
+        self.resnet18 = models.resnet18(pretrained=True)
+        num_ftrs = self.resnet18.fc.in_features
+        self.resnet18.fc = nn.Sequential(
+        nn.Dropout(0.5),
+        nn.Linear(num_ftrs, 1024),
+        nn.Dropout(0.2),
+        nn.Linear(1024, 512),
+        nn.Dropout(0.1),
+        nn.Linear(512, num_classes))
+
+
+    def forward(self, x):
+        return self.resnet18(x)
+
 class Resnet34(nn.Module):
     def __init__(self, num_classes, freeze=True):
         super().__init__()
         self.resnet34 = models.resnet34(pretrained=True)
         num_ftrs = self.resnet34.fc.in_features
-        self.resnet34.fc = nn.Linear(num_ftrs, num_classes)
+        self.resnet34.fc = nn.Sequential(
+        nn.Dropout(0.5),
+        nn.Linear(num_ftrs, 1024),
+        nn.Dropout(0.2),
+        nn.Linear(1024, 512),
+        nn.Dropout(0.1),
+        nn.Linear(512, num_classes))
 
     def forward(self, x):
         return self.resnet34(x)
+
+
 
 class EfficientB0(nn.Module):
     model_name = 'efficientnet-b0'

@@ -53,7 +53,7 @@ def inference(data_dir, model_dir, output_dir, args):
     info = pd.read_csv(info_path)
 
     img_paths = [os.path.join(img_root, img_id) for img_id in info.ImageID]
-    dataset = TestDataset(img_paths, mean=(0.41310054, 0.35737731, 0.32945708), std=(0.49996853, 0.44333395, 0.42083239))
+    dataset = TestDataset(img_paths, mean=(0.548, 0.504, 0.479), std=(0.237, 0.247, 0.246))
     loader = torch.utils.data.DataLoader(
         dataset,
         batch_size=args.batch_size,

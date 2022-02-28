@@ -1,1 +1,4 @@
-python train.py --epoch 15 --dataset MaskBaseByKindDataset --model EfficientB2 --val_ratio 0.01 --name B2_SEG_Crop_FULLTRAIN --kind age --data_dir /opt/ml/input/data/train/images_seg_crop2
+python train.py --epoch 15 --dataset MaskBaseDataset --model Resnet18 --val_ratio 0.01 --name RESNET18_FACE_Crop_FULLTRAIN_ALL --data_dir /opt/ml/input/data/train/images_face_crop
+python train.py --epoch 15 --dataset MaskBaseDataset --model Resnet18 --val_ratio 0.01 --name RESNET18_SEG_Crop_FULLTRAIN_ALL --data_dir /opt/ml/input/data/train/images_seg_crop2
+# python train.py --epoch 15 --dataset MaskBaseDataset --model resnet34 --val_ratio 0.01 --name RESNET34_FACE_Crop_FULLTRAIN_ALL --data_dir /opt/ml/input/data/train/images_face_crop
+# python train.py --epoch 15 --dataset MaskBaseDataset --model resnet34 --val_ratio 0.01 --name RESNET34_SEG_Crop_FULLTRAIN_ALL --data_dir /opt/ml/input/data/train/images_seg_crop2

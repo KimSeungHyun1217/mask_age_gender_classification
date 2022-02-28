@@ -104,8 +104,6 @@ def train(data_dir, model_dir, args):
         dataset = dataset_module(
             data_dir=data_dir,
             kind=kind,
-            mean=(0.41310054, 0.35737731, 0.32945708),
-            std=(0.49996853, 0.44333395, 0.42083239)
         )
     num_classes = dataset.num_classes  # 18
 
