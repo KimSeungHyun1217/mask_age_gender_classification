@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Tuple, List
 
 import numpy as np
+import pandas as pd
 import torch
 from PIL import Image
 from torch.utils.data import Dataset, Subset, random_split
@@ -49,11 +50,10 @@ class AddGaussianNoise(object):
 
 
 class CustomAugmentation:
-    def __init__(self, resize, mean, std, **args):
+    def __init__(self, mean, std, **args):
         self.transform = transforms.Compose([
             ToTensor(),
             Normalize(mean=mean, std=std),
-            AddGaussianNoise()
         ])
 
     def __call__(self, image):
@@ -331,7 +331,7 @@ class KindNClasses(int, Enum):
             return cls.AGEMOD10
         else:
             print(value)
-            raise ValueError(f"Kind value should be in ['mask', 'age', 'gender']")
+            raise ValueError(f"Kind value should be in ['mask', 'age', 'gender, ageMod10']")
 
 # -- 추가(박동훈)
 class MaskBaseByKindDataset(MaskBaseDataset):
@@ -359,3 +359,67 @@ class MaskBaseByKindDataset(MaskBaseDataset):
     
     def get_label(self, index):
         return self.labels[index]
+
+
+# -- 추가(박동훈)
+class CustomDataset(Dataset):
+    def __init__(self, csv_path, kind, imageType, mask=-1, gender=-1, mean=(0.548, 0.504, 0.479), std=(0.237, 0.247, 0.246), val_ratio=0.2):
+        self.df = pd.read_csv(csv_path)
+        self.kind = kind
+        self.imageType = imageType
+        self.num_classes = KindNClasses.from_str(kind).value
+        self.mean = mean
+        self.std = std
+        self.val_ratio = val_ratio
+        self.transform = None
+        self.setup(mask, gender)
+
+
+    def setup(self, mask, gender):
+        if(self.kind == 'mask'):
+            self.image_paths = self.df['path'].tolist()
+            self.labels = self.df['mask'].tolist()
+
+        elif(self.kind == 'gender'):
+            if(mask == -1):
+                assert "mask 지정"
+            
+            self.df = self.df[(self.df['mask'] == mask)]
+            self.image_paths = self.df['path'].tolist()
+            self.labels = self.df['gender'].tolist()
+
+        elif(self.kind == 'ageMod10'):
+            if(mask == -1 or gender == -1):
+                assert "mask 또는 gender 미설정"
+
+            self.df = self.df[(self.df['mask'] == mask) & (self.df.gender == gender)]
+            self.image_paths = self.df['path'].tolist()
+            self.labels = self.df['ageModTen'].tolist()
+
+        elif(self.kind == 'age'):
+            if(mask == -1 or gender == -1):
+                assert "mask 또는 gender 미설정"
+
+            self.df = self.df[(self.df['mask'] == mask) & (self.df.gender == gender)]
+            self.image_paths = self.df['path'].tolist()
+            self.labels = self.df['age'].tolist()
+        
+    def __getitem__(self, index):
+        assert self.transform is not None, ".set_tranform 메소드를 이용하여 transform 을 주입해주세요"
+        image = Image.open(self.image_paths[index].replace('images', self.imageType))
+        image_transform = self.transform(image)
+        label = self.labels[index]
+
+        return image_transform, label
+    
+    def __len__(self):
+        return len(self.image_paths)
+
+    def set_transform(self, transform):
+        self.transform = transform
+
+    def split_dataset(self) -> Tuple[Subset, Subset]:
+        n_val = int(len(self) * self.val_ratio)
+        n_train = len(self) - n_val
+        train_set, val_set = random_split(self, [n_train, n_val])
+        return train_set, val_set

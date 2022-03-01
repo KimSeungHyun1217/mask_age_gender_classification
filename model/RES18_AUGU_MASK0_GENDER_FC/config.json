@@ -1,0 +1,23 @@
+{
+    "seed": 42,
+    "epochs": 15,
+    "dataset": "CustomDataset",
+    "augmentation": "CustomAugmentation",
+    "batch_size": 16,
+    "valid_batch_size": 16,
+    "model": "Resnet18",
+    "freeze": true,
+    "optimizer": "Adam",
+    "lr": 0.001,
+    "val_ratio": 0.01,
+    "criterion": "focal",
+    "lr_decay_step": 7,
+    "log_interval": 1000,
+    "name": "RES18_AUGU_MASK0_GENDER",
+    "kind": "gender",
+    "mask": 0,
+    "gender": -1,
+    "imageType": "images_face_crop",
+    "data_dir": "/opt/ml/input/data/train/train_augu_concat.csv",
+    "model_dir": "./model"
+}

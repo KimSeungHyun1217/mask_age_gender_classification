@@ -85,7 +85,6 @@ def increment_path(path, exist_ok=False):
 # train
 def train(data_dir, model_dir, args):
     seed_everything(args.seed)
-
     save_dir = increment_path(os.path.join(model_dir, args.name))
 
     # -- settings
@@ -95,14 +94,18 @@ def train(data_dir, model_dir, args):
     # -- dataset
     dataset_module = getattr(import_module("dataset"), args.dataset)  # default: BaseAugmentation
     kind = args.kind
+    imageType = args.imageType
     if(kind == 'NULL'):
         dataset = dataset_module(
             data_dir=data_dir,
         )
     else:
         dataset = dataset_module(
-            data_dir=data_dir,
+            csv_path=data_dir,
             kind=kind,
+            imageType = imageType,
+            mask = args.mask,
+            gender = args.gender,
         )
     num_classes = dataset.num_classes  # 18
 
@@ -175,6 +178,7 @@ def train(data_dir, model_dir, args):
 
             outs = model(inputs)
             preds = torch.argmax(outs, dim=-1)
+
             loss = criterion(outs, labels)
 
             loss.backward()
@@ -218,12 +222,12 @@ def train(data_dir, model_dir, args):
                 val_loss_items.append(loss_item)
                 val_acc_items.append(acc_item)
 
-                if figure is None:
-                    inputs_np = torch.clone(inputs).detach().cpu().permute(0, 2, 3, 1).numpy()
-                    inputs_np = dataset_module.denormalize_image(inputs_np, dataset.mean, dataset.std)
-                    figure = grid_image(
-                        inputs_np, labels, preds, n=16, shuffle=args.dataset != "MaskSplitByProfileDataset"
-                    )
+                # if figure is None:
+                #     inputs_np = torch.clone(inputs).detach().cpu().permute(0, 2, 3, 1).numpy()
+                #     inputs_np = dataset_module.denormalize_image(inputs_np, dataset.mean, dataset.std)
+                #     figure = grid_image(
+                #         inputs_np, labels, preds, n=16, shuffle=args.dataset != "MaskSplitByProfileDataset"
+                #     )
 
             val_loss = np.sum(val_loss_items) / len(val_loader)
             val_acc = np.sum(val_acc_items) / len(val_set)
@@ -239,7 +243,7 @@ def train(data_dir, model_dir, args):
             )
             logger.add_scalar("Val/loss", val_loss, epoch)
             logger.add_scalar("Val/accuracy", val_acc, epoch)
-            logger.add_figure("results", figure, epoch)
+            # logger.add_figure("results", figure, epoch)
             # print()/
 
 
@@ -253,24 +257,27 @@ if __name__ == '__main__':
 
     # Data and model checkpoints directories
     parser.add_argument('--seed', type=int, default=42, help='random seed (default: 42)')
-    parser.add_argument('--epochs', type=int, default=20, help='number of epochs to train (default: 5)')
-    parser.add_argument('--dataset', type=str, default='MaskBaseDataset', help='dataset augmentation type (default: MaskBaseDataset)')
-    parser.add_argument('--augmentation', type=str, default='BaseAugmentation', help='data augmentation type (default: BaseAugmentation)')
+    parser.add_argument('--epochs', type=int, default=15, help='number of epochs to train (default: 5)')
+    parser.add_argument('--dataset', type=str, default='CustomDataset', help='dataset augmentation type (default: CustomDataset)')
+    parser.add_argument('--augmentation', type=str, default='CustomAugmentation', help='data augmentation type (default: CustomAugmentation)')
     parser.add_argument('--batch_size', type=int, default=16, help='input batch size for training (default: 32)')
     parser.add_argument('--valid_batch_size', type=int, default=16, help='input batch size for validing (default: 32)')
-    parser.add_argument('--model', type=str, default='BaseModel', help='model type (default: BaseModel)')
+    parser.add_argument('--model', type=str, default='Resnet18', help='model type (default: Resnet18)')
     parser.add_argument('--freeze', type=bool, default=True, help='use freeze')
     parser.add_argument('--optimizer', type=str, default='Adam', help='optimizer type (default: Adam)')
     parser.add_argument('--lr', type=float, default=1e-3, help='learning rate (default: 1e-3)')
-    parser.add_argument('--val_ratio', type=float, default=0.2, help='ratio for validaton (default: 0.2)')
+    parser.add_argument('--val_ratio', type=float, default=0.01, help='ratio for validaton (default: 0.01)')
     parser.add_argument('--criterion', type=str, default='focal', help='criterion type (default: focal)')
     parser.add_argument('--lr_decay_step', type=int, default=7, help='learning rate scheduler deacy step (default: 7)')
-    parser.add_argument('--log_interval', type=int, default=945, help='how many batches to wait before logging training status')
+    parser.add_argument('--log_interval', type=int, default=1000, help='how many batches to wait before logging training status')
     parser.add_argument('--name', default='exp', help='model save at {SM_MODEL_DIR}/{name}')
     parser.add_argument('--kind', type=str, default='NULL', help='kind in ["mask", "gender", "age"]')
+    parser.add_argument('--mask', type=int, default=-1, help='mask type')
+    parser.add_argument('--gender', type=int, default=-1, help='genderType')
+    parser.add_argument('--imageType', type=str, default='images_seg_crop_upper_face', help='imageType')
 
     # Container environment
-    parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_TRAIN', '/opt/ml/input/data/train/images'))
+    parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_TRAIN', '/opt/ml/input/data/train/train_augu_concat.csv'))
     parser.add_argument('--model_dir', type=str, default=os.environ.get('SM_MODEL_DIR', './model'))
 
     args = parser.parse_args()

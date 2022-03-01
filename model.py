@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models
 from functools import reduce
+import os
 
 class BaseModel(nn.Module):
     def __init__(self, num_classes):
@@ -38,9 +39,16 @@ class BaseModel(nn.Module):
 class Resnet18(nn.Module):
     def __init__(self, num_classes, freeze=True):
         super().__init__()
-        self.resnet18 = models.resnet18(pretrained=True)
-        num_ftrs = self.resnet18.fc.in_features
-        self.resnet18.fc = nn.Sequential(
+
+        model = models.resnet18(pretrained=True)
+        num_ftrs = model.fc.in_features
+        
+        if(freeze):
+            for n, p in model.named_parameters():
+                if 'fc' not in n:
+                    p.requires_grad = False
+
+        model.fc = nn.Sequential(
         nn.Dropout(0.5),
         nn.Linear(num_ftrs, 1024),
         nn.Dropout(0.2),
@@ -48,9 +56,10 @@ class Resnet18(nn.Module):
         nn.Dropout(0.1),
         nn.Linear(512, num_classes))
 
+        self.model = model
 
     def forward(self, x):
-        return self.resnet18(x)
+        return self.model(x)
 
 class Resnet34(nn.Module):
     def __init__(self, num_classes, freeze=True):
@@ -112,6 +121,90 @@ class EfficientB4(EfficientB0):
     def __init__(self, num_classes, freeze=True):
         super().__init__(num_classes, freeze=True)
 
+class PipeLineModel(nn.Module):
+    def __init__(self, device):
+        super().__init__()
+
+        model_path = '/opt/ml/code/model'
+        self.mask =  Resnet18(3)
+        self.mask.load_state_dict(torch.load(os.path.join(model_path, 'RES18_AUGU_MASK_FC','last.pt'), map_location=device))
+        self.mask0_gender =  Resnet18(2)
+        self.mask0_gender.load_state_dict(torch.load(os.path.join(model_path, 'RES18_AUGU_MASK0_GENDER_FC','last.pt'), map_location=device))
+        self.mask1_gender =  Resnet18(2)
+        self.mask1_gender.load_state_dict(torch.load(os.path.join(model_path, 'RES18_AUGU_MASK1_GENDER_FC','last.pt'), map_location=device))
+        self.mask2_gender =  Resnet18(2)
+        self.mask2_gender.load_state_dict(torch.load(os.path.join(model_path, 'RES18_AUGU_MASK2_GENDER_FC','last.pt'), map_location=device))
+        self.mask0_gender0_agemod10 =  Resnet18(7)
+        self.mask0_gender0_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_AUGU_MASK0_GENDER0_AGEMOD10_FC','last.pt'), map_location=device))
+        self.mask1_gender0_agemod10 =  Resnet18(7)
+        self.mask1_gender0_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_AUGU_MASK1_GENDER0_AGEMOD10_FC','last.pt'), map_location=device))
+        self.mask2_gender0_agemod10 =  Resnet18(7)
+        self.mask2_gender0_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_AUGU_MASK2_GENDER0_AGEMOD10_FC','last.pt'), map_location=device))
+        self.mask0_gender1_agemod10 =  Resnet18(7)
+        self.mask0_gender1_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_AUGU_MASK0_GENDER1_AGEMOD10_FC','last.pt'), map_location=device))
+        self.mask1_gender1_agemod10 =  Resnet18(7)
+        self.mask1_gender1_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_AUGU_MASK1_GENDER1_AGEMOD10_FC','last.pt'), map_location=device))
+        self.mask2_gender1_agemod10 =  Resnet18(7)
+        self.mask2_gender1_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_AUGU_MASK2_GENDER1_AGEMOD10_FC','last.pt'), map_location=device))
+
+    def forward(self, x):
+        mask = self.mask(x).argmax(dim=-1).item()
+        if(mask == 0):
+            gender = self.mask0_gender(x).argmax(dim=-1).item()
+            if(gender == 0):
+                ageMod10 = self.mask0_gender0_agemod10(x).argmax(dim=-1).item()
+                if(ageMod10 == 6):
+                    age = 2
+                elif(ageMod10 >= 3):
+                    age = 1
+                else:
+                    age = 0
+            else:
+                ageMod10 = self.mask0_gender1_agemod10(x).argmax(dim=-1).item()
+                if(ageMod10 == 6):
+                    age = 2
+                elif(ageMod10 >= 3):
+                    age = 1
+                else:
+                    age = 0
+        elif(mask == 1):
+            gender = self.mask1_gender(x).argmax(dim=-1).item()
+            if(gender == 0):
+                ageMod10 = self.mask1_gender0_agemod10(x).argmax(dim=-1).item()
+                if(ageMod10 == 6):
+                    age = 2
+                elif(ageMod10 >= 3):
+                    age = 1
+                else:
+                    age = 0
+            else:
+                ageMod10 = self.mask1_gender1_agemod10(x).argmax(dim=-1).item()
+                if(ageMod10 == 6):
+                    age = 2
+                elif(ageMod10 >= 3):
+                    age = 1
+                else:
+                    age = 0
+        elif(mask == 2):
+            gender = self.mask2_gender(x).argmax(dim=-1).item()
+            if(gender == 0):
+                ageMod10 = self.mask2_gender0_agemod10(x).argmax(dim=-1).item()
+                if(ageMod10 == 6):
+                    age = 2
+                elif(ageMod10 >= 3):
+                    age = 1
+                else:
+                    age = 0
+            else:
+                ageMod10 = self.mask2_gender1_agemod10(x).argmax(dim=-1).item()
+                if(ageMod10 == 6):
+                    age = 2
+                elif(ageMod10 >= 3):
+                    age = 1
+                else:
+                    age = 0
+
+        return mask * 6 + gender * 3 + age
     # def __init__(self,num_classes):
     #     super(efficientnetModel,self).__init__()
 
