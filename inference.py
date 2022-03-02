@@ -30,20 +30,19 @@ from model import PipeLineModel
 
 @torch.no_grad()
 def inference(data_dir, model_dir, output_dir, args):
-    """
-    """
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    model = PipeLineModel(device).to(device)
+    model = PipeLineModel(device, args.dtype).to(device)
     model.eval()
 
     img_root = os.path.join(data_dir, args.data_folder)
-    info_path = os.path.join(data_dir, 'info.csv')
+    info_path = os.path.join(data_dir, 'output_maskgender.csv')
     info = pd.read_csv(info_path)
-
     img_paths = [os.path.join(img_root, img_id) for img_id in info.ImageID]
-    dataset = TestDataset(img_paths, mean=(0.548, 0.504, 0.479), std=(0.237, 0.247, 0.246))
+
+    dataset = TestDataset(img_paths, info['mask'].tolist(), info['gender'].tolist(), mean=(0.548, 0.504, 0.479), std=(0.237, 0.247, 0.246))
+
     loader = torch.utils.data.DataLoader(
         dataset,
         batch_size=args.batch_size,
@@ -56,12 +55,12 @@ def inference(data_dir, model_dir, output_dir, args):
     print("Calculating inference results..")
     preds = []
     with torch.no_grad():
-        for idx, images in enumerate(loader):
+        for idx, data in enumerate(loader):
+            images, mask, gender = data
             images = images.to(device)
-            pred = model(images)
+            pred = model(images, mask, data)
             preds.append(pred)
-
-    info['ans'] = preds
+    info['ageMod10'] = preds
     info.to_csv(os.path.join(output_dir, args.file_name), index=False)
     print(f'Inference Done!')
 
@@ -70,8 +69,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # Data and model checkpoints directories
-    parser.add_argument('--batch_size', type=int, default=16, help='input batch size for validing (default: 1000)')
+    parser.add_argument('--batch_size', type=int, default=1, help='input batch size for validing (default: 1000)')
     parser.add_argument('--data_folder', type=str, default='images')
+    parser.add_argument('--dtype', type=str, default='SC')
 
     # Container environment
     parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_EVAL', '/opt/ml/input/data/eval'))

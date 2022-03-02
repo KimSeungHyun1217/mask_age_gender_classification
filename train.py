@@ -108,6 +108,8 @@ def train(data_dir, model_dir, args):
             gender = args.gender,
         )
     num_classes = dataset.num_classes  # 18
+    print(len(dataset))
+    print(num_classes)
 
     # -- augmentation
     transform_module = getattr(import_module("dataset"), args.augmentation)  # default: BaseAugmentation
@@ -274,10 +276,10 @@ if __name__ == '__main__':
     parser.add_argument('--kind', type=str, default='NULL', help='kind in ["mask", "gender", "age"]')
     parser.add_argument('--mask', type=int, default=-1, help='mask type')
     parser.add_argument('--gender', type=int, default=-1, help='genderType')
-    parser.add_argument('--imageType', type=str, default='images_seg_crop_upper_face', help='imageType')
+    parser.add_argument('--imageType', type=str, default='images_face_crop', help='imageType')
 
     # Container environment
-    parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_TRAIN', '/opt/ml/input/data/train/train_augu_concat.csv'))
+    parser.add_argument('--data_dir', type=str, default=os.environ.get('SM_CHANNEL_TRAIN', '/opt/ml/input/data/train/new_train.csv'))
     parser.add_argument('--model_dir', type=str, default=os.environ.get('SM_MODEL_DIR', './model'))
 
     args = parser.parse_args()

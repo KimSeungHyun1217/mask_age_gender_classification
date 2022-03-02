@@ -17,9 +17,23 @@
 # python train.py --name RES18_AUGU_MASK0_GENDER --kind 'gender' --mask 0
 # python train.py --name RES18_AUGU_MASK1_GENDER --kind 'gender' --mask 1
 # python train.py --name RES18_AUGU_MASK2_GENDER --kind 'gender' --mask 2
-python train.py --name RES18_AUGU_MASK0_GENDER0_AGEMOD10_SCFU --kind 'ageMod10' --mask 0 --gender 0
-python train.py --name RES18_AUGU_MASK1_GENDER0_AGEMOD10_SCFU --kind 'ageMod10' --mask 1 --gender 0
-python train.py --name RES18_AUGU_MASK2_GENDER0_AGEMOD10_SCFU --kind 'ageMod10' --mask 2 --gender 0
-python train.py --name RES18_AUGU_MASK0_GENDER1_AGEMOD10_SCFU --kind 'ageMod10' --mask 0 --gender 1
-python train.py --name RES18_AUGU_MASK1_GENDER1_AGEMOD10_SCFU --kind 'ageMod10' --mask 1 --gender 1
-python train.py --name RES18_AUGU_MASK2_GENDER1_AGEMOD10_SCFU --kind 'ageMod10' --mask 2 --gender 1 
+python train.py --name RES18_MASK0_GENDER0_AGEMOD10_FC --kind 'ageMod10' --mask 0 --gender 0 --imageType 'images_face_crop'
+python train.py --name RES18_MASK1_GENDER0_AGEMOD10_FC --kind 'ageMod10' --mask 1 --gender 0 --imageType 'images_face_crop'
+python train.py --name RES18_MASK2_GENDER0_AGEMOD10_FC --kind 'ageMod10' --mask 2 --gender 0 --imageType 'images_face_crop'
+python train.py --name RES18_MASK0_GENDER1_AGEMOD10_FC --kind 'ageMod10' --mask 0 --gender 1 --imageType 'images_face_crop'
+python train.py --name RES18_MASK1_GENDER1_AGEMOD10_FC --kind 'ageMod10' --mask 1 --gender 1 --imageType 'images_face_crop'
+python train.py --name RES18_MASK2_GENDER1_AGEMOD10_FC --kind 'ageMod10' --mask 2 --gender 1  --imageType 'images_face_crop'
+
+python train.py --name RES18_MASK0_GENDER0_AGEMOD10_SC --kind 'ageMod10' --mask 0 --gender 0 --imageType 'images_seg_crop'
+python train.py --name RES18_MASK1_GENDER0_AGEMOD10_SC --kind 'ageMod10' --mask 1 --gender 0 --imageType 'images_seg_crop'
+python train.py --name RES18_MASK2_GENDER0_AGEMOD10_SC --kind 'ageMod10' --mask 2 --gender 0 --imageType 'images_seg_crop'
+python train.py --name RES18_MASK0_GENDER1_AGEMOD10_SC --kind 'ageMod10' --mask 0 --gender 1 --imageType 'images_seg_crop'
+python train.py --name RES18_MASK1_GENDER1_AGEMOD10_SC --kind 'ageMod10' --mask 1 --gender 1 --imageType 'images_seg_crop'
+python train.py --name RES18_MASK2_GENDER1_AGEMOD10_SC --kind 'ageMod10' --mask 2 --gender 1  --imageType 'images_seg_crop'
+
+python train.py --name RES18_MASK0_GENDER0_AGEMOD10_SCFU --kind 'ageMod10' --mask 0 --gender 0 --imageType 'images_seg_crop_upper_face'
+python train.py --name RES18_MASK1_GENDER0_AGEMOD10_SCFU --kind 'ageMod10' --mask 1 --gender 0 --imageType 'images_seg_crop_upper_face'
+python train.py --name RES18_MASK2_GENDER0_AGEMOD10_SCFU --kind 'ageMod10' --mask 2 --gender 0 --imageType 'images_seg_crop_upper_face'
+python train.py --name RES18_MASK0_GENDER1_AGEMOD10_SCFU --kind 'ageMod10' --mask 0 --gender 1 --imageType 'images_seg_crop_upper_face'
+python train.py --name RES18_MASK1_GENDER1_AGEMOD10_SCFU --kind 'ageMod10' --mask 1 --gender 1 --imageType 'images_seg_crop_upper_face'
+python train.py --name RES18_MASK2_GENDER1_AGEMOD10_SCFU --kind 'ageMod10' --mask 2 --gender 1  --imageType 'images_seg_crop_upper_face'

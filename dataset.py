@@ -294,22 +294,24 @@ class MaskSplitByProfileDataset(MaskBaseDataset):
 
 
 class TestDataset(Dataset):
-    def __init__(self, img_paths, mean=(0.548, 0.504, 0.479), std=(0.237, 0.247, 0.246)):
-        self.img_paths = img_paths
+    def __init__(self, path, mask, gender, mean=(0.548, 0.504, 0.479), std=(0.237, 0.247, 0.246)):
+        self.path = path
+        self.maskL = mask
+        self.genderL = gender
         self.transform = transforms.Compose([
             ToTensor(),
             Normalize(mean=mean, std=std),
         ])
 
     def __getitem__(self, index):
-        image = Image.open(self.img_paths[index])
+        image = Image.open(self.path[index])
 
         if self.transform:
             image = self.transform(image)
-        return image
+        return image, self.maskL[index], self.genderL[index]
 
     def __len__(self):
-        return len(self.img_paths)
+        return len(self.path)
 
 # -- 추가(박동훈)
 class KindNClasses(int, Enum):
