@@ -127,17 +127,17 @@ class PipeLineModel(nn.Module):
 
         model_path = '/opt/ml/code/model'
         self.mask0_gender0_agemod10 =  Resnet18(7)
-        self.mask0_gender0_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_MASK0_GENDER0_AGEMOD10_' + dtype ,'last.pt'), map_location=device))
+        self.mask0_gender0_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_MASK0_GENDER0_AGEMOD10_' + dtype + '_AUG','last.pt'), map_location=device))
         self.mask1_gender0_agemod10 =  Resnet18(7)
-        self.mask1_gender0_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_MASK1_GENDER0_AGEMOD10_' + dtype ,'last.pt'), map_location=device))
+        self.mask1_gender0_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_MASK1_GENDER0_AGEMOD10_' + dtype + '_AUG' ,'last.pt'), map_location=device))
         self.mask2_gender0_agemod10 =  Resnet18(7)
-        self.mask2_gender0_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_MASK2_GENDER0_AGEMOD10_' + dtype ,'last.pt'), map_location=device))
+        self.mask2_gender0_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_MASK2_GENDER0_AGEMOD10_' + dtype + '_AUG' ,'last.pt'), map_location=device))
         self.mask0_gender1_agemod10 =  Resnet18(7)
-        self.mask0_gender1_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_MASK0_GENDER1_AGEMOD10_' + dtype ,'last.pt'), map_location=device))
+        self.mask0_gender1_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_MASK0_GENDER1_AGEMOD10_' + dtype + '_AUG' ,'last.pt'), map_location=device))
         self.mask1_gender1_agemod10 =  Resnet18(7)
-        self.mask1_gender1_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_MASK1_GENDER1_AGEMOD10_' + dtype ,'last.pt'), map_location=device))
+        self.mask1_gender1_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_MASK1_GENDER1_AGEMOD10_' + dtype + '_AUG' ,'last.pt'), map_location=device))
         self.mask2_gender1_agemod10 =  Resnet18(7)
-        self.mask2_gender1_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_MASK2_GENDER1_AGEMOD10_' + dtype ,'last.pt'), map_location=device))
+        self.mask2_gender1_agemod10.load_state_dict(torch.load(os.path.join(model_path, 'RES18_MASK2_GENDER1_AGEMOD10_' + dtype + '_AUG' ,'last.pt'), map_location=device))
 
     def forward(self, images, mask, gender):
         if(mask == 0):
